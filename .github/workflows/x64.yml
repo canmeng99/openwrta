@@ -68,11 +68,17 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
-    - name: 更新feeds
-      run: cd openwrt && ./scripts/feeds update -a
+    - name: 更新&安装feeds
+      working-directory: ./openwrt
+      run: |
+        ./scripts/feeds update -a
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+        
 
-    - name: 安装feeds
-      run: cd openwrt && ./scripts/feeds install -a
+#    - name: 安装feeds
+#      run: |
+#        cd openwrt && ./scripts/feeds install -a
 
     - name: 加载自定义配置
       run: |
@@ -133,7 +139,7 @@ jobs:
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        name: OpenWrt${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
 #    - name: 生成发布标签
