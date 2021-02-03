@@ -59,7 +59,7 @@ jobs:
       run: |
         df -hT $PWD
         git clone $REPO_URL
-        ln -sf /workdir $GITHUB_WORKSPACE/openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         
 
     - name: 加载自定义
@@ -70,8 +70,9 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
     - name: 更新&安装feeds
-      working-directory: ./openwrt
+#      working-directory: ./openwrt
       run: |
+        cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds update -a
         ./scripts/feeds install -a
