@@ -71,16 +71,15 @@ jobs:
 
     - name: 更新&安装feeds
 #      working-directory: ./openwrt
-      run: |
-        cd openwrt
-        ./scripts/feeds update -a
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
-        
-
-#    - name: 安装feeds
 #      run: |
-#        cd openwrt && ./scripts/feeds install -a
+#        cd openwrt
+#        ./scripts/feeds update -a
+#        ./scripts/feeds update -a
+#        ./scripts/feeds install -a
+      run: cd openwrt && ./scripts/feeds update -a
+      
+    - name: 安装feeds
+      run: cd openwrt && ./scripts/feeds install -a
 
     - name: 加载自定义配置
       run: |
