@@ -121,6 +121,12 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
+    - name: 上载dl目录
+      uses: actions/upload-artifact@main
+      with:
+        name: dl${{ env.DEVICE_NAME }}
+        path: openwrt/dl
+
     - name: 上载bin目录
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
