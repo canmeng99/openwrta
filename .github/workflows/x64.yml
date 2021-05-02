@@ -6,7 +6,7 @@
 #
 # https://github.com/P3TERX/Actions-OpenWrt
 # Description: Build OpenWrt using GitHub Actions
-#
+#        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
 
 name: x64
 
@@ -26,7 +26,8 @@ env:
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
-  UPLOAD_BIN_DIR: true
+  UPLOAD_BIN_DIR: false
+  UPLOAD_DL_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_COWTRANSFER: false
   UPLOAD_WETRANSFER: false
@@ -46,10 +47,11 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -qq update
-        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
-        sudo -E apt-get -qq autoremove --purge
-        sudo -E apt-get -qq clean
+        sudo -E apt -qq update
+        sudo -E apt -qq upgrade
+        sudo -E apt -qq install antlr3 asciidoc autoconf automake autopoint binutils build-essential bzip2 device-tree-compiler flex g++-multilib gawk gcc-multilib gettext git gperf lib32gcc1 libc6-dev-i386 libelf-dev libglib2.0-dev libncurses5-dev libssl-dev libtool libz-dev msmtp p7zip p7zip-full patch python2.7 python3 python3-distutils python3-setuptools qemu-utils rsync subversion swig texinfo uglifyjs unzip upx wget xmlto zlib1g-dev 
+        sudo -E apt -qq autoremove --purge
+        sudo -E apt -qq clean
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
@@ -102,16 +104,16 @@ jobs:
         cd openwrt
         make defconfig
         make download -j8 V=s
-        make download -j8 V=s
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
+        make download -j8 V=s
+        
     - name: 编译固件
       id: compile
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) V=s
+        make -j$(($(nproc) + 1)) V=s 
         echo "::set-output name=status::success"
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
@@ -123,9 +125,9 @@ jobs:
 
     - name: 上载dl目录
       uses: actions/upload-artifact@main
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_DL_DIR == 'true'
       with:
-        name: dl
+        name: DL${{ env.FILE_DATE }}
         path: openwrt/dl
 
     - name: 上载bin目录
